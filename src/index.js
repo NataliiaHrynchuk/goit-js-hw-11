@@ -29,8 +29,30 @@ function onSearch(event) {
     });
         page +=1;
         refs.loadMoreBtn.classList.remove("is-hidden");
-    })
-    
-       
+    })       
+}
+
+function onLoadMore(event) {
+    event.preventDefault();
+    fetchImages(searchQuery, page)    
+    .then((data) => {
+        // console.log(data.hits);
+        console.log(`totalHits: ${data.totalHits}`);
+        const {hits} = data;
+        hits.map(hit =>{
+            const {
+                webformatURL,
+                largeImageURL,
+                tags, 
+                likes,
+                views, 
+                comments,
+                downloads
+            } = hit;
+        console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
+    });
+        page +=1;
+
+})
 }
 refs.form.addEventListener('submit', onSearch);
