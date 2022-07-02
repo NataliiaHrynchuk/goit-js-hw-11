@@ -52,7 +52,15 @@ function onLoadMore(event) {
         console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
     });
         page +=1;
-
 })
 }
+
+function ofLoadMore() {
+    page = 1;
+    refs.loadMoreBtn.classList.add("is-hidden");
+ }
+
+
 refs.form.addEventListener('submit', onSearch);
+refs.form.addEventListener('input', ofLoadMore);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
