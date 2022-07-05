@@ -1,7 +1,18 @@
 import { fetchImages } from './fetchImages';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 let searchQuery = '';
 let page = 1;
+let gallery = new SimpleLightbox('.photo-card a', {
+    close: true,
+    closeText: '×',
+    overlayOpasity: 0.8,
+    fadeSpeed: 250,
+    // captionsData: 'alt',
+    
+});
+
 
 const refs = {
     form: document.querySelector('#search-form'),
@@ -10,6 +21,8 @@ const refs = {
 };
 
 refs.loadMoreBtn.classList.add("is-hidden");
+
+
 const renderImagesList = (webformatURL, largeImageURL, tags, likes, views, comments, downloads) => {
         return `<div class="photo-card">
     <a class="gallery__item" href="${largeImageURL}">
@@ -40,7 +53,12 @@ function onSearch(event) {
     .then((data) => {
         // console.log(data.hits);
         console.log(`totalHits: ${data.totalHits}`);
-        const {hits} = data;
+        const { hits } = data;
+        
+        if (data.totalHits === 0) {
+                console.log("Sorry, there are no images matching your search query. Please try again.")
+        }
+        
         hits.map(hit =>{
             const {
                 webformatURL,
@@ -53,7 +71,12 @@ function onSearch(event) {
             } = hit;
             console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
              refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
-    });
+            gallery.on('show.SimpleLightbox', function (e) {
+                    e.preventDefault();
+                    sourceAttr: 'href';
+                });
+                gallery.refresh();
+        });
         page +=1;
         refs.loadMoreBtn.classList.remove("is-hidden");
     })       
@@ -85,6 +108,7 @@ function onLoadMore(event) {
 function ofLoadMore() {
     page = 1;
     refs.loadMoreBtn.classList.add("is-hidden");
+    refs.imageContainer.innerHTML = '';
  }
 
 
