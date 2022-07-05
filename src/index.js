@@ -1,11 +1,37 @@
-import {fetchImages} from './fetchImages';
+import { fetchImages } from './fetchImages';
+
 let searchQuery = '';
 let page = 1;
+
 const refs = {
     form: document.querySelector('#search-form'),
     loadMoreBtn: document.querySelector('.load-more'),
+    imageContainer: document.querySelector('.gallery')
 };
+
 refs.loadMoreBtn.classList.add("is-hidden");
+const renderImagesList = (webformatURL, largeImageURL, tags, likes, views, comments, downloads) => {
+        return `<div class="photo-card">
+    <a class="gallery__item" href="${largeImageURL}">
+    <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
+    </a>
+    <div class="info">
+      <p class="info-item">
+        <b>Likes</b> ${likes}
+      </p>
+      <p class="info-item">
+        <b>Views</b> ${views}
+      </p>
+      <p class="info-item">
+        <b>Comments</b> ${comments}
+      </p>
+      <p class="info-item">
+        <b>Downloads</b> ${downloads}
+      </p>
+    </div>
+</div>`
+    };
+
 function onSearch(event) {
     event.preventDefault();
     searchQuery = event.currentTarget.elements.searchQuery.value;
@@ -25,7 +51,8 @@ function onSearch(event) {
                 comments,
                 downloads
             } = hit;
-        console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
+            console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
+             refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
     });
         page +=1;
         refs.loadMoreBtn.classList.remove("is-hidden");
