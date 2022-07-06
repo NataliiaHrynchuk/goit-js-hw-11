@@ -1,6 +1,7 @@
 import { fetchImages } from './fetchImages';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 let searchQuery = '';
 let page = 1;
@@ -13,13 +14,11 @@ let gallery = new SimpleLightbox('.photo-card a', {
 
 const refs = {
     form: document.querySelector('#search-form'),
-    // loadMoreBtn: document.querySelector('.load-more'),
     imageContainer: document.querySelector('.gallery'),
     scrollGuard: document.querySelector('.scroll-guard'),
     input: document.querySelector('input')
 };
 
-// refs.loadMoreBtn.classList.add("is-hidden");
 const options = {
     rootMargin: "200px",
     threshold: 1.0,
@@ -33,6 +32,10 @@ const observer = new IntersectionObserver(entries => {
                 .then((data) => {
                     // console.log(data.hits);
                     // console.log(`totalHits: ${data.totalHits}`);
+                    const totalPages = data.totalHits / 40; 
+                    if( page > totalPages) {
+                        Notify.warning("We're sorry, but you've reached the end of search results.")
+                    } 
                     const { hits } = data;
                     hits.map(hit => {
                         const {
@@ -88,11 +91,15 @@ function onSearch(event) {
     fetchImages(searchQuery, page)
     .then((data) => {
         // console.log(data.hits);
-        console.log(`totalHits: ${data.totalHits}`);
+        // console.log(`totalHits: ${data.totalHits}`);
+        if (data.totalHits > 0) {
+            Notify.success(`Hooray! We found ${data.totalHits}images`);
+        }
         const { hits } = data;
         
         if (data.totalHits === 0) {
-                console.log("Sorry, there are no images matching your search query. Please try again.")
+                // console.log("Sorry, there are no images matching your search query. Please try again.");
+                Notify.failure('Sorry, there are no images matching your search query. Please try again.');
         }
         
         hits.map(hit =>{
@@ -107,6 +114,14 @@ function onSearch(event) {
             } = hit;
             // console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
             refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
+            const { height: cardHeight } = document
+  .querySelector(".gallery")
+  .firstElementChild.getBoundingClientRect();
+
+window.scrollBy({
+  top: cardHeight * 2,
+  behavior: "smooth",
+});
             gallery.on('show.SimpleLightbox', function (e) {
                 sourceAttr: 'href';
             });
@@ -114,36 +129,11 @@ function onSearch(event) {
         });
         page +=1;
         observer.observe(refs.scrollGuard);
-        // refs.loadMoreBtn.classList.remove("is-hidden");
     })       
 }
 
-// function onLoadMore(event) {
-//     event.preventDefault();
-//     fetchImages(searchQuery, page)    
-//     .then((data) => {
-//         // console.log(data.hits);
-//         console.log(`totalHits: ${data.totalHits}`);
-//         const {hits} = data;
-//         hits.map(hit =>{
-//             const {
-//                 webformatURL,
-//                 largeImageURL,
-//                 tags, 
-//                 likes,
-//                 views, 
-//                 comments,
-//                 downloads
-//             } = hit;
-//         console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
-//     });
-//         page +=1;
-// })
-// }
-
 function ofLoadMore() {
     page = 1;
-    // refs.loadMoreBtn.classList.add("is-hidden");
     entry.isIntersecting = false;
     refs.imageContainer.innerHTML = '';
  }
@@ -151,4 +141,3 @@ function ofLoadMore() {
 refs.imageContainer.innerHTML = '';
 refs.form.addEventListener('submit', onSearch);
 refs.input.addEventListener('input', ofLoadMore);
-// refs.loadMoreBtn.addEventListener('click', onLoadMore);
