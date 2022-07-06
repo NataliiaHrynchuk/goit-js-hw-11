@@ -8,20 +8,56 @@ let gallery = new SimpleLightbox('.photo-card a', {
     close: true,
     closeText: '×',
     overlayOpasity: 0.8,
-    fadeSpeed: 250,
-    // captionsData: 'alt',
-    
+    fadeSpeed: 250,    
 });
-
 
 const refs = {
     form: document.querySelector('#search-form'),
-    loadMoreBtn: document.querySelector('.load-more'),
-    imageContainer: document.querySelector('.gallery')
+    // loadMoreBtn: document.querySelector('.load-more'),
+    imageContainer: document.querySelector('.gallery'),
+    scrollGuard: document.querySelector('.scroll-guard'),
+    input: document.querySelector('input')
 };
 
-refs.loadMoreBtn.classList.add("is-hidden");
+// refs.loadMoreBtn.classList.add("is-hidden");
+const options = {
+    rootMargin: "200px",
+    threshold: 1.0,
+}
 
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            console.log('INTERSECTING!');
+            fetchImages(searchQuery, page)
+                .then((data) => {
+                    // console.log(data.hits);
+                    // console.log(`totalHits: ${data.totalHits}`);
+                    const { hits } = data;
+                    hits.map(hit => {
+                        const {
+                            webformatURL,
+                            largeImageURL,
+                            tags,
+                            likes,
+                            views,
+                            comments,
+                            downloads
+                        } = hit;
+                        // console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
+                        refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
+                        gallery.on('show.SimpleLightbox', function (e) {
+                    e.preventDefault();
+                    sourceAttr: 'href';
+                });
+                gallery.refresh();
+                    });
+                    page += 1;
+                })
+        }
+    })    
+    
+}, options);
 
 const renderImagesList = (webformatURL, largeImageURL, tags, likes, views, comments, downloads) => {
         return `<div class="photo-card">
@@ -69,49 +105,50 @@ function onSearch(event) {
                 comments,
                 downloads
             } = hit;
-            console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
-             refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
+            // console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
+            refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
             gallery.on('show.SimpleLightbox', function (e) {
-                    e.preventDefault();
-                    sourceAttr: 'href';
-                });
-                gallery.refresh();
+                sourceAttr: 'href';
+            });
+            gallery.refresh();
         });
         page +=1;
-        refs.loadMoreBtn.classList.remove("is-hidden");
+        observer.observe(refs.scrollGuard);
+        // refs.loadMoreBtn.classList.remove("is-hidden");
     })       
 }
 
-function onLoadMore(event) {
-    event.preventDefault();
-    fetchImages(searchQuery, page)    
-    .then((data) => {
-        // console.log(data.hits);
-        console.log(`totalHits: ${data.totalHits}`);
-        const {hits} = data;
-        hits.map(hit =>{
-            const {
-                webformatURL,
-                largeImageURL,
-                tags, 
-                likes,
-                views, 
-                comments,
-                downloads
-            } = hit;
-        console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
-    });
-        page +=1;
-})
-}
+// function onLoadMore(event) {
+//     event.preventDefault();
+//     fetchImages(searchQuery, page)    
+//     .then((data) => {
+//         // console.log(data.hits);
+//         console.log(`totalHits: ${data.totalHits}`);
+//         const {hits} = data;
+//         hits.map(hit =>{
+//             const {
+//                 webformatURL,
+//                 largeImageURL,
+//                 tags, 
+//                 likes,
+//                 views, 
+//                 comments,
+//                 downloads
+//             } = hit;
+//         console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
+//     });
+//         page +=1;
+// })
+// }
 
 function ofLoadMore() {
     page = 1;
-    refs.loadMoreBtn.classList.add("is-hidden");
+    // refs.loadMoreBtn.classList.add("is-hidden");
+    entry.isIntersecting = false;
     refs.imageContainer.innerHTML = '';
  }
 
-
+refs.imageContainer.innerHTML = '';
 refs.form.addEventListener('submit', onSearch);
-refs.form.addEventListener('input', ofLoadMore);
-refs.loadMoreBtn.addEventListener('click', onLoadMore);
+refs.input.addEventListener('input', ofLoadMore);
+// refs.loadMoreBtn.addEventListener('click', onLoadMore);
