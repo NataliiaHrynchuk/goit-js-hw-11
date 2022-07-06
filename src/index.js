@@ -33,7 +33,7 @@ const observer = new IntersectionObserver(entries => {
                     // console.log(data.hits);
                     // console.log(`totalHits: ${data.totalHits}`);
                     const totalPages = data.totalHits / 40; 
-                    if( page > totalPages) {
+                    if( page > totalPages && totalPages !== 0) {
                         Notify.warning("We're sorry, but you've reached the end of search results.")
                     } 
                     const { hits } = data;
