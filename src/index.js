@@ -50,16 +50,15 @@ const observer = new IntersectionObserver(entries => {
                         // console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
                         refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
                         gallery.on('show.SimpleLightbox', function (e) {
-                    e.preventDefault();
-                    sourceAttr: 'href';
-                });
-                gallery.refresh();
+                            e.preventDefault();
+                            sourceAttr: 'href';
+                        });
+                        gallery.refresh();
                     });
                     page += 1;
                 })
         }
     })    
-    
 }, options);
 
 const renderImagesList = (webformatURL, largeImageURL, tags, likes, views, comments, downloads) => {
@@ -89,55 +88,58 @@ function onSearch(event) {
     refs.imageContainer.innerHTML = '';
     searchQuery = event.currentTarget.elements.searchQuery.value;
     console.log(searchQuery);
-    fetchImages(searchQuery, page)
-    .then((data) => {
+    if (searchQuery !== '') {
+        fetchImages(searchQuery, page)
+        .then((data) => {
         // console.log(data.hits);
         // console.log(`totalHits: ${data.totalHits}`);
-        if (data.totalHits > 0) {
-            Notify.success(`Hooray! We found ${data.totalHits}images`);
-        }
-        const { hits } = data;
+            if (data.totalHits > 0) {
+                Notify.success(`Hooray! We found ${data.totalHits}images`);
+            }
+            
+            const { hits } = data;
         
-        if (data.totalHits === 0) {
+            if (data.totalHits === 0) {
                 // console.log("Sorry, there are no images matching your search query. Please try again.");
                 Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-        }
+            }
         
-        hits.map(hit =>{
-            const {
-                webformatURL,
-                largeImageURL,
-                tags, 
-                likes,
-                views, 
-                comments,
-                downloads
-            } = hit;
+            hits.map(hit =>{
+                const {
+                    webformatURL,
+                    largeImageURL,
+                    tags, 
+                    likes,
+                    views, 
+                    comments,
+                    downloads
+                } = hit;
             // console.log(`webformatURL: ${webformatURL}, largeImageURL: ${largeImageURL}, tags: ${tags}, likes: ${likes}, views: ${views}, comments: ${comments}, downloads: ${downloads}`);
             refs.imageContainer.insertAdjacentHTML("beforeend", renderImagesList(webformatURL, largeImageURL, tags, likes, views, comments, downloads));
             const { height: cardHeight } = document
-  .querySelector(".gallery")
-  .firstElementChild.getBoundingClientRect();
+                .querySelector(".gallery")
+                .firstElementChild.getBoundingClientRect();
 
-window.scrollBy({
-  top: cardHeight * 2,
-  behavior: "smooth",
-});
+            window.scrollBy({
+                top: cardHeight * 2,
+                behavior: "smooth",
+            });
             gallery.on('show.SimpleLightbox', function (e) {
                 sourceAttr: 'href';
             });
             gallery.refresh();
-        });
-        page +=1;
-        observer.observe(refs.scrollGuard);
-    })       
+            });
+            page +=1;
+            observer.observe(refs.scrollGuard);
+        })
+    }       
 }
 
 function ofLoadMore() {
     page = 1;
     entry.isIntersecting = false;
     refs.imageContainer.innerHTML = '';
- }
+}
 
 refs.imageContainer.innerHTML = '';
 refs.form.addEventListener('submit', onSearch);
